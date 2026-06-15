@@ -3,746 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GKING V100.1 - Wingo 30S Live Predictor</title>
+    <title>GKING V100.1 - SUPREME COPY</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        :root { --neon: #00ff88; --cyan: #00d2ff; --bg: #010103; --card: #0a0a12; --win: #00ff88; --loss: #ff3366; --gold: #ffea00; }
+        body { background-color: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; display: flex; justify-content: center; overflow-x: hidden; }
+        .wrapper { width: 100%; max-width: 460px; min-height: 100vh; background: var(--card); border: 1px solid #1a1e2e; border-radius: 45px; padding: 25px; box-shadow: 0 0 60px rgba(0, 210, 255, 0.1); position: relative; }
+        
+        .header { text-align: center; border-bottom: 2px solid #1a1e2e; margin-bottom: 25px; padding-bottom: 10px; }
+        .header h1 { font-size: 26px; margin: 0; background: linear-gradient(to right, var(--cyan), #fff, var(--neon)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; letter-spacing: 2px; }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            color: #333;
-        }
+        .status-row { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .s-box { background: #000; border: 1px solid #222; padding: 10px 15px; border-radius: 15px; text-align: center; flex: 1; margin: 0 5px; }
+        .s-box span { font-size: 8px; color: #555; display: block; text-transform: uppercase; }
+        #timerText { font-size: 18px; font-weight: 900; color: var(--loss); font-family: monospace; }
+        #syncStatus { font-size: 10px; color: var(--neon); font-weight: bold; }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-        }
+        .hub { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .hub-box { background: #000; padding: 15px; border-radius: 20px; border: 1px solid #1a1e2e; text-align: center; }
+        .hub-box b { font-size: 20px; color: #fff; }
 
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
+        .screen { background: radial-gradient(circle at center, #111522 0%, #010206 100%); border: 2px solid #1a1e2e; border-radius: 40px; padding: 40px 10px; text-align: center; margin-bottom: 25px; position: relative; overflow: hidden; }
+        #periodId { font-size: 11px; color: #444; margin-bottom: 12px; font-family: monospace; }
+        #prediction { font-size: 75px; font-weight: 900; margin: 0; color: #111; transition: 0.4s; letter-spacing: 10px; }
+        .target-node { background: rgba(255, 234, 0, 0.1); border: 2px solid var(--gold); border-radius: 50%; width: 55px; height: 55px; line-height: 55px; font-size: 32px; font-weight: 900; color: var(--gold); margin: 15px auto 0; text-shadow: 0 0 15px var(--gold); }
 
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-            font-weight: 700;
-        }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
+        .btn { padding: 18px; border-radius: 20px; border: none; font-weight: 900; cursor: pointer; transition: 0.2s; font-size: 15px; text-transform: uppercase; }
+        .btn-win { background: var(--win); color: #000; }
+        .btn-loss { background: var(--loss); color: #fff; }
 
-        .header p {
-            font-size: 13px;
-            opacity: 0.9;
-        }
+        .history-card { background: #000; border-radius: 35px; padding: 20px; border: 1px solid #111; }
+        .history-card h3 { font-size: 10px; color: #333; text-align: center; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 2px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        td { padding: 12px; text-align: center; border-bottom: 1px solid #080808; font-family: monospace; }
+        .win-t { color: var(--win); font-weight: bold; }
+        .loss-t { color: var(--loss); font-weight: bold; }
 
-        .status-bar {
-            background: #f8f9fa;
-            padding: 15px 20px;
-            border-bottom: 2px solid #e9ecef;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .status-label {
-            font-size: 12px;
-            color: #666;
-            font-weight: 600;
-        }
-
-        .status-value {
-            font-size: 14px;
-            font-weight: 700;
-            color: #667eea;
-        }
-
-        .sync-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #28a745;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .content {
-            padding: 30px 20px;
-        }
-
-        .prediction-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 25px;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
-
-        .prediction-label {
-            font-size: 13px;
-            opacity: 0.9;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .prediction-main {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .big-small {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            font-size: 28px;
-            font-weight: 700;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .neural-target {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 20px;
-            border-radius: 10px;
-            font-size: 28px;
-            font-weight: 700;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .algorithm-info {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            margin-top: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .section {
-            margin-bottom: 25px;
-        }
-
-        .section-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #667eea;
-            display: inline-block;
-        }
-
-        .stake-tracker {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .stake-level {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            border: 2px solid #e9ecef;
-            text-align: center;
-        }
-
-        .stake-level.active {
-            border-color: #667eea;
-            background: #f0f4ff;
-        }
-
-        .stake-label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .stake-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #667eea;
-        }
-
-        .loss-counter {
-            font-size: 12px;
-            color: #dc3545;
-            margin-top: 5px;
-            font-weight: 600;
-        }
-
-        .warning-box {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            color: #856404;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            margin-bottom: 15px;
-            display: none;
-        }
-
-        .warning-box.show {
-            display: block;
-        }
-
-        .streak-logs {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #e9ecef;
-            margin-bottom: 15px;
-        }
-
-        .streak-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #e9ecef;
-            font-size: 13px;
-        }
-
-        .streak-item:last-child {
-            border-bottom: none;
-        }
-
-        .streak-symbol {
-            font-weight: 700;
-            font-size: 16px;
-        }
-
-        .streak-symbol.win {
-            color: #28a745;
-        }
-
-        .streak-symbol.loss {
-            color: #dc3545;
-        }
-
-        .copy-symbols {
-            background: #e8f4f8;
-            padding: 12px;
-            border-radius: 8px;
-            word-break: break-all;
-            font-family: 'Courier New', monospace;
-            font-size: 16px;
-            font-weight: 700;
-            color: #0c5460;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .button-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .button-group.full {
-            grid-template-columns: 1fr;
-        }
-
-        button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-secondary {
-            background: #e9ecef;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #dee2e6;
-        }
-
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c82333;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
-        .footer {
-            background: #f8f9fa;
-            padding: 15px 20px;
-            text-align: center;
-            font-size: 12px;
-            color: #666;
-            border-top: 1px solid #e9ecef;
-        }
-
-        .loading {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #667eea;
-            animation: loading 1.4s infinite;
-        }
-
-        @keyframes loading {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
-        }
-
-        @media (max-width: 480px) {
-            .prediction-main {
-                flex-direction: column;
-            }
-
-            .header h1 {
-                font-size: 22px;
-            }
-
-            .big-small, .neural-target {
-                width: 100%;
-            }
-
-            .status-bar {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 10px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            margin-bottom: 10px;
-            display: none;
-        }
-
-        .success-message.show {
-            display: block;
-        }
+        /* Naya Copy Button Style */
+        .copy-btn { width: 100%; padding: 12px; background: var(--cyan); color: #000; border: none; border-radius: 15px; font-weight: 900; cursor: pointer; margin-top: 15px; text-transform: uppercase; font-size: 12px; }
+        .copy-btn:active { transform: scale(0.95); background: #fff; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎯 GKING V100.1</h1>
-            <p>Wingo 30S Live Auto-Sync Predictor</p>
-        </div>
 
-        <div class="status-bar">
-            <div class="status-item">
-                <span class="sync-indicator"></span>
-                <span class="status-label">Live Sync</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">Next Period:</span>
-                <span class="status-value" id="nextPeriodId">-</span>
-            </div>
-            <div class="status-item">
-                <span class="status-label">Updated:</span>
-                <span class="status-value" id="lastUpdate">Now</span>
-            </div>
-        </div>
+<div class="wrapper">
+    <div class="header"><h1>GKING V100.1</h1></div>
 
-        <div class="content">
-            <!-- Prediction Box -->
-            <div class="prediction-box">
-                <div class="prediction-label">📊 Next Period Prediction</div>
-                <div class="prediction-main">
-                    <div class="big-small" id="bigSmallPrediction">-</div>
-                    <div class="neural-target" id="neuralTargetPrediction">-</div>
-                </div>
-                <div class="algorithm-info" id="algorithmInfo">
-                    Algorithm: Loading...
-                </div>
-            </div>
-
-            <!-- Warning Box -->
-            <div class="warning-box" id="warningBox">
-                ⚠️ <strong>Reset Alert:</strong> 2 consecutive losses detected! Stake reset to Level 1 (₹10) for budget protection.
-            </div>
-
-            <!-- Success Message -->
-            <div class="success-message" id="successMessage">
-                ✅ Symbols copied to clipboard!
-            </div>
-
-            <!-- Stake Tracker Section -->
-            <div class="section">
-                <div class="section-title">💰 Stake Tracker (3X Martingale)</div>
-                <div class="stake-tracker">
-                    <div class="stake-level active" id="level1">
-                        <div class="stake-label">Level 1</div>
-                        <div class="stake-value">₹10</div>
-                        <div class="loss-counter" id="level1Loss"></div>
-                    </div>
-                    <div class="stake-level" id="level2">
-                        <div class="stake-label">Level 2</div>
-                        <div class="stake-value">₹30</div>
-                        <div class="loss-counter" id="level2Loss"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Streak Logs Section -->
-            <div class="section">
-                <div class="section-title">📈 Streak Logs (Last 5 Rounds)</div>
-                <div class="streak-logs" id="streakLogs">
-                    <div style="text-align: center; color: #999; font-size: 13px;">No data yet. Waiting for API sync...</div>
-                </div>
-            </div>
-
-            <!-- Copy Symbols Section -->
-            <div class="section">
-                <div class="section-title">📋 Copy Trend Symbols</div>
-                <div class="copy-symbols" id="copySymbols">-</div>
-                <div class="button-group full">
-                    <button class="btn-success" onclick="copySymbols()">📋 Copy to Clipboard</button>
-                </div>
-            </div>
-
-            <!-- Control Buttons -->
-            <div class="section">
-                <div class="button-group">
-                    <button class="btn-primary" onclick="refreshPrediction()">🔄 Refresh Now</button>
-                    <button class="btn-danger" onclick="purgeMemory()">🗑️ Purge Memory</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="footer">
-            <p>🚀 GKING V100.1 | Auto-Sync Every 30 Seconds | Live API Integration</p>
-            <p>⚠️ Disclaimer: This is a prediction tool. Use at your own risk.</p>
-        </div>
+    <div class="status-row">
+        <div class="s-box"><span>COUNTDOWN</span><b id="timerText">00:30</b></div>
+        <div class="s-box"><span>STATUS</span><b id="syncStatus">AUTO SYNC</b></div>
     </div>
 
-    <script>
-        // Configuration
-        const API_URL = 'https://wingo.com/api/GetHistoryIssuePage.json';
-        const SYNC_INTERVAL = 30000; // 30 seconds
-        const STORAGE_KEY = 'gking_v100_logs';
-        const MAX_STREAK_LOGS = 5;
+    <div class="hub">
+        <div class="hub-box"><span>STAKE</span><b id="betAmt">₹10</b></div>
+        <div class="hub-box"><span>LEVEL</span><b id="lvlStep">L 1</b></div>
+    </div>
 
-        // State Management
-        let state = {
-            currentPeriodId: null,
-            nextPeriodId: null,
-            streakLogs: [],
-            consecutiveLosses: 0,
-            currentLevel: 1,
-            lastAlgorithm: 'SQR'
-        };
+    <div class="screen">
+        <div id="periodId">PERIOD ID: ---</div>
+        <div id="prediction">SCAN</div>
+        <div class="target-node" id="targetNum">?</div>
+        <div style="font-size: 9px; color: var(--gold); margin-top: 10px; letter-spacing: 2px;">NEURAL TARGET</div>
+    </div>
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            loadFromStorage();
-            updateUI();
-            syncWithAPI();
-            setInterval(syncWithAPI, SYNC_INTERVAL);
+    <div class="controls">
+        <button class="btn btn-win" onclick="handleResult(true)">WON (RESET)</button>
+        <button class="btn btn-loss" onclick="handleResult(false)">LOST (3X)</button>
+    </div>
+
+    <div class="history-card">
+        <h3>STREAK LOGS (5 SLOT)</h3>
+        <div class="table-wrap">
+            <table id="historyTable">
+                <tbody id="logBody"></tbody>
+            </table>
+        </div>
+        <!-- NAYA COPY OPTION -->
+        <button class="copy-btn" onclick="copySymbols()">Copy History Symbols</button>
+        <button onclick="localStorage.clear(); location.reload();" style="width:100%; background:none; border:none; color:#222; font-size:9px; margin-top:15px; cursor:pointer;">PURGE MEMORY</button>
+    </div>
+</div>
+
+<script>
+    let currentLvl = 1;
+    let lastProcessedId = "";
+    let logs = JSON.parse(localStorage.getItem('gking_v100_logs')) || [];
+
+    window.onload = () => { updateHistoryUI(); startTimer(); syncEngine(); };
+
+    function startTimer() {
+        setInterval(() => {
+            const now = new Date();
+            const rem = 30 - (now.getSeconds() % 30);
+            document.getElementById('timerText').innerText = "00:" + (rem < 10 ? "0" + rem : rem);
+        }, 1000);
+    }
+
+    async function syncEngine() {
+        const api = 'https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json';
+        try {
+            const res = await fetch(api);
+            const data = await res.json();
+            const latest = data.data.list[0];
+            const nextId = (BigInt(latest.issueNumber) + 1n).toString();
+            document.getElementById('periodId').innerText = "PERIOD ID: " + nextId;
+
+            if (lastProcessedId !== latest.issueNumber) {
+                if (lastProcessedId) autoLog(latest, data.data.list);
+                runPrediction(data.data.list);
+                lastProcessedId = latest.issueNumber;
+            }
+        } catch (e) { }
+        setTimeout(syncEngine, 1500);
+    }
+
+    function runPrediction(list) {
+        const n1 = parseInt(list[0].number);
+        const p1 = parseInt(list[1].number);
+        const lastActualSize = n1 >= 5 ? "BIG" : "SMALL";
+        
+        // Reverse Clone Logic
+        const checkFs = [
+            { id: "SQR", c: (p1 * p1) % 10 },
+            { id: "MOD", c: (p1 + parseInt(list[1].issueNumber.slice(-1))) % 10 },
+            { id: "LIN", c: (p1 * 3 + 7) % 10 }
+        ];
+        let winner = checkFs.find(f => (f.c >= 5 ? "BIG" : "SMALL") === lastActualSize) || checkFs[0];
+
+        let val = 0;
+        const idDigit = parseInt(list[0].issueNumber.slice(-1));
+        if(winner.id === "SQR") val = (n1 * n1) % 10;
+        else if(winner.id === "MOD") val = (n1 + idDigit) % 10;
+        else val = (n1 * 3 + 7) % 10;
+
+        let prediction = val >= 5 ? "BIG" : "SMALL";
+        window.currentSizePred = prediction;
+        window.currentNumPred = val;
+
+        const pEl = document.getElementById('prediction');
+        pEl.innerText = prediction;
+        pEl.style.color = (prediction === "BIG") ? "var(--cyan)" : "var(--neon)";
+        document.getElementById('targetNum').innerText = val;
+    }
+
+    function autoLog(latest, list) {
+        const actualRes = parseInt(latest.number) >= 5 ? "BIG" : "SMALL";
+        const isWin = window.currentSizePred === actualRes;
+        
+        logs.unshift({
+            id: latest.issueNumber.slice(-3),
+            res: actualRes,
+            sts: isWin ? "WIN" : "LOSS",
+            sym: isWin ? "✓" : "✗"
         });
 
-        // Fetch and Sync with API
-        async function syncWithAPI() {
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    },
-                    mode: 'cors',
-                    credentials: 'omit'
-                });
+        if (logs.length > 5) logs.pop();
+        localStorage.setItem('gking_v100_logs', JSON.stringify(logs));
+        updateHistoryUI();
+    }
 
-                if (response.ok) {
-                    const data = await response.json();
-                    
-                    if (data && data.data && data.data.length > 0) {
-                        const latestRecord = data.data[0];
-                        state.nextPeriodId = String(parseInt(latestRecord.periodId || latestRecord.id) + 1);
-                        state.currentPeriodId = latestRecord.periodId || latestRecord.id;
-                        
-                        // Generate new prediction
-                        generatePrediction();
-                        updateLastUpdateTime();
-                    }
-                }
-            } catch (error) {
-                console.log('API Sync Note:', error.message);
-                // Fallback: Generate prediction from cached data
-                if (!state.nextPeriodId) {
-                    state.nextPeriodId = String(Math.floor(Math.random() * 10000) + 1000);
-                    generatePrediction();
-                }
-            }
+    function updateHistoryUI() {
+        const body = document.getElementById('logBody');
+        body.innerHTML = logs.map(l => `
+            <tr>
+                <td>ID:${l.id}</td>
+                <td style="color:${l.res === 'BIG' ? 'var(--cyan)' : 'var(--neon)'}">${l.res}</td>
+                <td class="${l.sts === 'WIN' ? 'win-t' : 'loss-t'}">${l.sym}</td>
+            </tr>
+        `).join('');
+    }
+
+    // --- FIX FOR COPYING SYMBOLS ---
+    function copySymbols() {
+        if (logs.length === 0) { alert("Pehle results aane do!"); return; }
+        
+        // Collect symbols from history array
+        const symbolSequence = logs.map(l => l.sym).join(" ");
+        
+        const dummy = document.createElement("textarea");
+        document.body.appendChild(dummy);
+        dummy.value = symbolSequence;
+        dummy.select();
+        dummy.setSelectionRange(0, 99999); 
+        
+        try {
+            document.execCommand("copy");
+            alert("✓ Symbols Copied: " + symbolSequence);
+        } catch (err) {
+            alert("Copy failed!");
         }
+        document.body.removeChild(dummy);
+    }
 
-        // Generate Prediction using Dynamic Formula Strategy
-        function generatePrediction() {
-            const algorithms = ['SQR', 'MOD', 'LIN'];
-            
-            // Select algorithm based on winning strategy from previous round
-            let selectedAlgorithm = algorithms[Math.floor(Math.random() * algorithms.length)];
-            
-            let bigSmallValue = '';
-            let neuralTarget = 0;
-
-            const periodNum = parseInt(state.nextPeriodId || 1234);
-
-            // Algorithm Analysis
-            if (selectedAlgorithm === 'SQR') {
-                const sqrValue = (periodNum * periodNum) % 10;
-                neuralTarget = sqrValue;
-                bigSmallValue = sqrValue >= 5 ? 'BIG' : 'SMALL';
-            } else if (selectedAlgorithm === 'MOD') {
-                const modValue = periodNum % 10;
-                neuralTarget = modValue;
-                bigSmallValue = modValue >= 5 ? 'BIG' : 'SMALL';
-            } else if (selectedAlgorithm === 'LIN') {
-                const linValue = (periodNum / 10) % 10 | 0;
-                neuralTarget = linValue;
-                bigSmallValue = linValue >= 5 ? 'BIG' : 'SMALL';
-            }
-
-            state.lastAlgorithm = selectedAlgorithm;
-            
-            // Update UI
-            document.getElementById('bigSmallPrediction').textContent = bigSmallValue;
-            document.getElementById('neuralTargetPrediction').textContent = String(neuralTarget).padStart(2, '0');
-            document.getElementById('algorithmInfo').textContent = 
-                `🔧 Algorithm: ${selectedAlgorithm} | Strategy: Auto-Selected from Winning Pattern`;
-            document.getElementById('nextPeriodId').textContent = state.nextPeriodId;
-
-            saveToStorage();
+    function handleResult(win) {
+        if (win) currentLvl = 1;
+        else {
+            if (currentLvl === 1) currentLvl = 2;
+            else { currentLvl = 1; alert("GUARD RESET!"); }
         }
-
-        // Streak Management
-        function addStreak(result) {
-            const symbol = result === 'win' ? '✓' : '✗';
-            
-            state.streakLogs.unshift({
-                round: state.nextPeriodId,
-                result: result,
-                symbol: symbol,
-                timestamp: new Date().toLocaleTimeString()
-            });
-
-            if (state.streakLogs.length > MAX_STREAK_LOGS) {
-                state.streakLogs.pop();
-            }
-
-            // Update consecutive losses
-            if (result === 'loss') {
-                state.consecutiveLosses++;
-            } else {
-                state.consecutiveLosses = 0;
-                state.currentLevel = 1;
-            }
-
-            // Guard Reset - 2 consecutive losses
-            if (state.consecutiveLosses >= 2) {
-                showWarning();
-                state.currentLevel = 1;
-                state.consecutiveLosses = 0;
-            }
-
-            updateStreakLogs();
-            saveToStorage();
-        }
-
-        // Update Streak Logs UI
-        function updateStreakLogs() {
-            const streakLogsDiv = document.getElementById('streakLogs');
-            
-            if (state.streakLogs.length === 0) {
-                streakLogsDiv.innerHTML = '<div style="text-align: center; color: #999; font-size: 13px;">No data yet. Waiting for API sync...</div>';
-                return;
-            }
-
-            let html = '';
-            state.streakLogs.forEach((log, index) => {
-                const symbolClass = log.result === 'win' ? 'win' : 'loss';
-                html += `
-                    <div class="streak-item">
-                        <span style="color: #666;">Round ${log.round}</span>
-                        <span class="streak-symbol ${symbolClass}">${log.symbol}</span>
-                        <span style="color: #999; font-size: 11px;">${log.timestamp}</span>
-                    </div>
-                `;
-            });
-
-            streakLogsDiv.innerHTML = html;
-            updateCopySymbols();
-        }
-
-        // Update Copy Symbols
-        function updateCopySymbols() {
-            const symbols = state.streakLogs.map(log => log.symbol).join(' ');
-            document.getElementById('copySymbols').textContent = symbols || '-';
-        }
-
-        // Copy Symbols to Clipboard
-        function copySymbols() {
-            const symbols = document.getElementById('copySymbols').textContent;
-            
-            if (symbols === '-') {
-                alert('No symbols to copy yet!');
-                return;
-            }
-
-            navigator.clipboard.writeText(symbols).then(() => {
-                const successMsg = document.getElementById('successMessage');
-                successMsg.classList.add('show');
-                
-                setTimeout(() => {
-                    successMsg.classList.remove('show');
-                }, 2000);
-            }).catch(err => {
-                alert('Failed to copy: ' + err);
-            });
-        }
-
-        // Show Warning
-        function showWarning() {
-            const warningBox = document.getElementById('warningBox');
-            warningBox.classList.add('show');
-            
-            setTimeout(() => {
-                warningBox.classList.remove('show');
-            }, 5000);
-        }
-
-        // Update Stake Tracker UI
-        function updateStakeTracker() {
-            const level1 = document.getElementById('level1');
-            const level2 = document.getElementById('level2');
-
-            if (state.currentLevel === 1) {
-                level1.classList.add('active');
-                level2.classList.remove('active');
-            } else {
-                level1.classList.remove('active');
-                level2.classList.add('active');
-            }
-
-            if (state.consecutiveLosses > 0) {
-                document.getElementById('level1Loss').textContent = `${state.consecutiveLosses} Loss${state.consecutiveLosses > 1 ? 'es' : ''}`;
-            }
-        }
-
-        // Refresh Prediction
-        function refreshPrediction() {
-            syncWithAPI();
-        }
-
-        // Purge Memory
-        function purgeMemory() {
-            if (confirm('⚠️ Are you sure you want to purge all memory and restart fresh?')) {
-                state = {
-                    currentPeriodId: null,
-                    nextPeriodId: null,
-                    streakLogs: [],
-                    consecutiveLosses: 0,
-                    currentLevel: 1,
-                    lastAlgorithm: 'SQR'
-                };
-                localStorage.removeItem(STORAGE_KEY);
-                updateUI();
-                syncWithAPI();
-                alert('✅ Memory purged! Tool restarted fresh.');
-            }
-        }
-
-        // Update Last Update Time
-        function updateLastUpdateTime() {
-            const now = new Date();
-            const time = now.toLocaleTimeString();
-            document.getElementById('lastUpdate').textContent = time;
-        }
-
-        // Update UI
-        function updateUI() {
-            updateStakeTracker();
-            updateStreakLogs();
-            updateCopySymbols();
-        }
-
-        // Local Storage
-        function saveToStorage() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        }
-
-        function loadFromStorage() {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                try {
-                    state = JSON.parse(stored);
-                } catch (e) {
-                    console.error('Storage load error:', e);
-                }
-            }
-        }
-
-        // Demo: Add sample streak (remove in production)
-        window.addSampleStreak = function(result) {
-            addStreak(result);
-        };
-    </script>
+        document.getElementById('lvlStep').innerText = "L " + currentLvl;
+        document.getElementById('betAmt').innerText = (currentLvl === 1 ? "₹10" : "₹30");
+    }
+</script>
 </body>
 </html>
