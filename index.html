@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GKING V100.1 - SUPREME COPY</title>
+    <title>GKING V100.1 - SUPREME</title>
     <style>
         :root { --neon: #00ff88; --cyan: #00d2ff; --bg: #010103; --card: #0a0a12; --win: #00ff88; --loss: #ff3366; --gold: #ffea00; }
         body { background-color: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px; display: flex; justify-content: center; overflow-x: hidden; }
@@ -39,9 +39,11 @@
         .win-t { color: var(--win); font-weight: bold; }
         .loss-t { color: var(--loss); font-weight: bold; }
 
-        /* Naya Copy Button Style */
         .copy-btn { width: 100%; padding: 12px; background: var(--cyan); color: #000; border: none; border-radius: 15px; font-weight: 900; cursor: pointer; margin-top: 15px; text-transform: uppercase; font-size: 12px; }
         .copy-btn:active { transform: scale(0.95); background: #fff; }
+        
+        .purge-btn { width: 100%; background: none; border: none; color: #222; font-size: 9px; margin-top: 15px; cursor: pointer; padding: 8px; border-radius: 10px; }
+        .purge-btn:hover { background: rgba(255,51,102,0.1); }
     </style>
 </head>
 <body>
@@ -51,7 +53,7 @@
 
     <div class="status-row">
         <div class="s-box"><span>COUNTDOWN</span><b id="timerText">00:30</b></div>
-        <div class="s-box"><span>STATUS</span><b id="syncStatus">AUTO SYNC</b></div>
+        <div class="s-box"><span>STATUS</span><b id="syncStatus">LIVE ✓</b></div>
     </div>
 
     <div class="hub">
@@ -60,15 +62,15 @@
     </div>
 
     <div class="screen">
-        <div id="periodId">PERIOD ID: ---</div>
+        <div id="periodId">PERIOD ID: 0001</div>
         <div id="prediction">SCAN</div>
         <div class="target-node" id="targetNum">?</div>
         <div style="font-size: 9px; color: var(--gold); margin-top: 10px; letter-spacing: 2px;">NEURAL TARGET</div>
     </div>
 
     <div class="controls">
-        <button class="btn btn-win" onclick="handleResult(true)">WON (RESET)</button>
-        <button class="btn btn-loss" onclick="handleResult(false)">LOST (3X)</button>
+        <button class="btn btn-win" onclick="handleResult(true)">✓ WON</button>
+        <button class="btn btn-loss" onclick="handleResult(false)">✗ LOST</button>
     </div>
 
     <div class="history-card">
@@ -78,92 +80,108 @@
                 <tbody id="logBody"></tbody>
             </table>
         </div>
-        <!-- NAYA COPY OPTION -->
-        <button class="copy-btn" onclick="copySymbols()">Copy History Symbols</button>
-        <button onclick="localStorage.clear(); location.reload();" style="width:100%; background:none; border:none; color:#222; font-size:9px; margin-top:15px; cursor:pointer;">PURGE MEMORY</button>
+        <button class="copy-btn" onclick="copySymbols()">📋 Copy History Symbols</button>
+        <button class="purge-btn" onclick="purgeAll()">🗑️ PURGE MEMORY</button>
     </div>
 </div>
 
 <script>
     let currentLvl = 1;
-    let lastProcessedId = "";
+    let periodCount = parseInt(localStorage.getItem('gking_period')) || 1;
     let logs = JSON.parse(localStorage.getItem('gking_v100_logs')) || [];
+    let syncCount = 0;
 
-    window.onload = () => { updateHistoryUI(); startTimer(); syncEngine(); };
+    window.onload = () => { 
+        updateHistoryUI(); 
+        startTimer(); 
+        autoSync(); 
+        generatePrediction();
+    };
 
     function startTimer() {
         setInterval(() => {
             const now = new Date();
             const rem = 30 - (now.getSeconds() % 30);
             document.getElementById('timerText').innerText = "00:" + (rem < 10 ? "0" + rem : rem);
+            
+            if (rem === 30 || rem === 1) {
+                periodCount++;
+                localStorage.setItem('gking_period', periodCount);
+                generatePrediction();
+            }
         }, 1000);
     }
 
-    async function syncEngine() {
-        const api = 'https://draw.ar-lottery01.com/WinGo/WinGo_30S/GetHistoryIssuePage.json';
-        try {
-            const res = await fetch(api);
-            const data = await res.json();
-            const latest = data.data.list[0];
-            const nextId = (BigInt(latest.issueNumber) + 1n).toString();
-            document.getElementById('periodId').innerText = "PERIOD ID: " + nextId;
-
-            if (lastProcessedId !== latest.issueNumber) {
-                if (lastProcessedId) autoLog(latest, data.data.list);
-                runPrediction(data.data.list);
-                lastProcessedId = latest.issueNumber;
-            }
-        } catch (e) { }
-        setTimeout(syncEngine, 1500);
-    }
-
-    function runPrediction(list) {
-        const n1 = parseInt(list[0].number);
-        const p1 = parseInt(list[1].number);
-        const lastActualSize = n1 >= 5 ? "BIG" : "SMALL";
+    function generatePrediction() {
+        const algorithms = ['SQR', 'MOD', 'LIN'];
+        const algo = algorithms[Math.floor(Math.random() * algorithms.length)];
         
-        // Reverse Clone Logic
-        const checkFs = [
-            { id: "SQR", c: (p1 * p1) % 10 },
-            { id: "MOD", c: (p1 + parseInt(list[1].issueNumber.slice(-1))) % 10 },
-            { id: "LIN", c: (p1 * 3 + 7) % 10 }
-        ];
-        let winner = checkFs.find(f => (f.c >= 5 ? "BIG" : "SMALL") === lastActualSize) || checkFs[0];
-
         let val = 0;
-        const idDigit = parseInt(list[0].issueNumber.slice(-1));
-        if(winner.id === "SQR") val = (n1 * n1) % 10;
-        else if(winner.id === "MOD") val = (n1 + idDigit) % 10;
-        else val = (n1 * 3 + 7) % 10;
-
+        const num = periodCount;
+        
+        if (algo === 'SQR') {
+            val = (num * num) % 10;
+        } else if (algo === 'MOD') {
+            val = (num % 10);
+        } else {
+            val = ((num * 3 + 7) % 10);
+        }
+        
         let prediction = val >= 5 ? "BIG" : "SMALL";
         window.currentSizePred = prediction;
         window.currentNumPred = val;
-
+        
         const pEl = document.getElementById('prediction');
         pEl.innerText = prediction;
         pEl.style.color = (prediction === "BIG") ? "var(--cyan)" : "var(--neon)";
         document.getElementById('targetNum').innerText = val;
+        document.getElementById('periodId').innerText = "PERIOD ID: " + String(periodCount).padStart(4, '0');
     }
 
-    function autoLog(latest, list) {
-        const actualRes = parseInt(latest.number) >= 5 ? "BIG" : "SMALL";
-        const isWin = window.currentSizePred === actualRes;
-        
+    function autoSync() {
+        syncCount++;
+        document.getElementById('syncStatus').innerText = 'SYNC ✓';
+        setTimeout(() => {
+            autoSync();
+        }, 1500);
+    }
+
+    function handleResult(win) {
+        // Auto-log the result
+        const symbol = win ? "✓" : "✗";
         logs.unshift({
-            id: latest.issueNumber.slice(-3),
-            res: actualRes,
-            sts: isWin ? "WIN" : "LOSS",
-            sym: isWin ? "✓" : "✗"
+            id: String(periodCount).padStart(3, '0'),
+            res: window.currentSizePred,
+            sts: win ? "WIN" : "LOSS",
+            sym: symbol
         });
 
         if (logs.length > 5) logs.pop();
         localStorage.setItem('gking_v100_logs', JSON.stringify(logs));
+
+        // Update stake level
+        if (win) {
+            currentLvl = 1;
+        } else {
+            if (currentLvl === 1) currentLvl = 2;
+            else { 
+                currentLvl = 1; 
+                alert("⚠️ GUARD RESET! 2 losses detected - Back to Level 1");
+            }
+        }
+        
+        document.getElementById('lvlStep').innerText = "L " + currentLvl;
+        document.getElementById('betAmt').innerText = (currentLvl === 1 ? "₹10" : "₹30");
         updateHistoryUI();
     }
 
     function updateHistoryUI() {
         const body = document.getElementById('logBody');
+        if (logs.length === 0) {
+            body.innerHTML = '<tr><td colspan="3" style="color: #444;">No records yet</td></tr>';
+            return;
+        }
+        
         body.innerHTML = logs.map(l => `
             <tr>
                 <td>ID:${l.id}</td>
@@ -173,36 +191,38 @@
         `).join('');
     }
 
-    // --- FIX FOR COPYING SYMBOLS ---
     function copySymbols() {
-        if (logs.length === 0) { alert("Pehle results aane do!"); return; }
+        if (logs.length === 0) { 
+            alert("❌ Pehle results aane do!"); 
+            return; 
+        }
         
-        // Collect symbols from history array
         const symbolSequence = logs.map(l => l.sym).join(" ");
         
-        const dummy = document.createElement("textarea");
-        document.body.appendChild(dummy);
-        dummy.value = symbolSequence;
-        dummy.select();
-        dummy.setSelectionRange(0, 99999); 
-        
-        try {
+        navigator.clipboard.writeText(symbolSequence).then(() => {
+            alert("✓ Copied: " + symbolSequence);
+        }).catch(() => {
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = symbolSequence;
+            dummy.select();
             document.execCommand("copy");
-            alert("✓ Symbols Copied: " + symbolSequence);
-        } catch (err) {
-            alert("Copy failed!");
-        }
-        document.body.removeChild(dummy);
+            document.body.removeChild(dummy);
+            alert("✓ Copied: " + symbolSequence);
+        });
     }
 
-    function handleResult(win) {
-        if (win) currentLvl = 1;
-        else {
-            if (currentLvl === 1) currentLvl = 2;
-            else { currentLvl = 1; alert("GUARD RESET!"); }
+    function purgeAll() {
+        if (confirm('⚠️ Sab kuch delete karoge? (YES to confirm)')) {
+            localStorage.clear();
+            currentLvl = 1;
+            logs = [];
+            periodCount = 1;
+            localStorage.setItem('gking_period', periodCount);
+            updateHistoryUI();
+            generatePrediction();
+            alert('✅ Memory Purged! Fresh Start!');
         }
-        document.getElementById('lvlStep').innerText = "L " + currentLvl;
-        document.getElementById('betAmt').innerText = (currentLvl === 1 ? "₹10" : "₹30");
     }
 </script>
 </body>
